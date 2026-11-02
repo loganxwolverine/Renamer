@@ -45,6 +45,15 @@ pub fn apply_match(it: &mut MediaItem, m: TmdbMatch, api: &Tmdb, status: Status,
     refresh_status(it, cfg);
 }
 
+/// Un élément verrouillé reste affiché (avec son explication) mais n'est jamais prêt à renommer.
+pub fn lock_status(it: &mut MediaItem) {
+    if let Some(l) = &it.locked {
+        it.status = Status::Locked;
+        it.message = Some(l.clone());
+        it.included = false;
+    }
+}
+
 pub fn refresh_status(it: &mut MediaItem, cfg: &Config) {
     if it.matched.is_some() && naming::target_path(it, cfg) == it.path {
         it.status = Status::UpToDate;
@@ -95,6 +104,7 @@ pub fn identify_all(items: &mut [MediaItem], api: &Tmdb, cfg: &Config, report: &
                 None if cands.is_empty() => it.status = Status::NotFound,
                 None => it.status = Status::Review,
             }
+            lock_status(it);
             report(Progress::Item(i, Box::new(it.clone())));
         }
     }

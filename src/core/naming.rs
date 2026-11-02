@@ -90,6 +90,7 @@ pub fn vars_for(item: &MediaItem, cfg: &Config) -> HashMap<&'static str, String>
         "episode",
         item.guess.episodes.iter().map(|e| format!("{e:02}")).collect::<Vec<_>>().join("-E"),
     );
+    v.insert("disque", item.guess.disc.map(|d| d.to_string()).unwrap_or_default());
     v.insert("titre_episode", item.episode_title.clone().unwrap_or_default());
     v
 }
@@ -194,6 +195,9 @@ pub fn build_plan(items: &[MediaItem], indices: &[usize], cfg: &Config) -> Vec<I
 
     for &i in indices {
         let item = &items[i];
+        if item.locked.is_some() {
+            continue; // sécurité : jamais de renommage d'un élément verrouillé
+        }
         let is_dir = item.layout.is_dir();
         let wanted = target_path(item, cfg);
         let mut ops = vec![];

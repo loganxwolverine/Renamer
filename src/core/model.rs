@@ -41,6 +41,8 @@ pub struct Guess {
     pub year: Option<u16>,
     pub season: Option<u16>,
     pub episodes: Vec<u16>,
+    /// Numéro de disque (DISC2, CD1, Disque 2…)
+    pub disc: Option<u8>,
     /// Tags techniques repérés dans le nom (utilisés si ffprobe échoue)
     pub tags: Vec<String>,
 }
@@ -122,6 +124,8 @@ pub enum Status {
     Done,
     /// Erreur
     Error,
+    /// Ne doit pas être renommé (voir MediaItem::locked)
+    Locked,
 }
 
 impl Status {
@@ -135,13 +139,14 @@ impl Status {
             Status::UpToDate => "Déjà conforme",
             Status::Done => "Renommé",
             Status::Error => "Erreur",
+            Status::Locked => "Non renommable",
         }
     }
     pub fn css(&self) -> &'static str {
         match self {
             Status::Auto | Status::Confirmed => "success",
             Status::Review => "warning",
-            Status::NotFound | Status::Error => "error",
+            Status::NotFound | Status::Error | Status::Locked => "error",
             Status::UpToDate | Status::Done => "accent",
             Status::Pending => "dim-label",
         }
@@ -168,6 +173,8 @@ pub struct MediaItem {
     pub status: Status,
     pub included: bool,
     pub message: Option<String>,
+    /// Raison pour laquelle ce média ne doit pas être renommé (structure disque mal placée…)
+    pub locked: Option<String>,
 }
 
 impl MediaItem {

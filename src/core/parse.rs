@@ -46,6 +46,9 @@ static YEAR: Lazy<Regex> =
 static BRACKETS: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[[^\]]*\]|\{[^}]*\}").unwrap());
 static TMDB_ID: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?i)[\[{(]\s*tmdb(?:id)?[-= :]?(\d+)\s*[\]})]").unwrap());
+static DISC_NUM: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"(?i)(?:^|[^a-z])(?:disc|disk|disque|cd|dvd|bd|part|partie)[ ._-]?0?([1-9])(?:[^0-9]|$)").unwrap()
+});
 static SPACES: Lazy<Regex> = Lazy::new(|| Regex::new(r"\s+").unwrap());
 
 /// Minuscule, sans accents, sans ponctuation : pour comparer des titres.
@@ -191,6 +194,7 @@ pub fn season_from_dir(name: &str) -> Option<u16> {
 pub fn guess_for(media: &Path, is_dir: bool, stop: &Path) -> Guess {
     let base = if is_dir { name_of(media) } else { stem_of(media) };
     let mut g = parse_name(&base);
+    g.disc = DISC_NUM.captures(&base).and_then(|c| c[1].parse().ok());
 
     // Ancêtres (du plus proche au plus lointain), sans dépasser le dossier catégorie
     let ancestors: Vec<&Path> = media
@@ -319,6 +323,11 @@ mod tests {
         assert_eq!(g.year, Some(1972));
         let g = guess_for(Path::new("/m/Films/Heat (1995)/DISC1"), true, stop);
         assert_eq!(g.title, "Heat");
+        assert_eq!(g.disc, Some(1));
+        let g2 = guess_for(Path::new("/m/Films/Heat.1995.Disque.2"), true, stop);
+        assert_eq!(g2.disc, Some(2));
+        let g3 = guess_for(Path::new("/m/Films/Le Parrain 1972/title_t00.mkv"), false, stop);
+        assert_eq!(g3.disc, None);
         assert_eq!(g.year, Some(1995));
     }
 

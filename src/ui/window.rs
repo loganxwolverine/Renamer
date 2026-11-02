@@ -346,7 +346,7 @@ pub fn build(app: &adw::Application) {
                 Filter::All => true,
                 Filter::Review => it.status == Status::Review,
                 Filter::Ready => it.status.ready(),
-                Filter::NotFound => matches!(it.status, Status::NotFound | Status::Error),
+                Filter::NotFound => matches!(it.status, Status::NotFound | Status::Error | Status::Locked),
                 Filter::Done => matches!(it.status, Status::UpToDate | Status::Done),
             };
             pass && (st.search.is_empty() || it.path.to_string_lossy().to_lowercase().contains(&st.search))
@@ -411,6 +411,7 @@ pub fn build(app: &adw::Application) {
                     it.matched = None;
                     it.candidates.clear();
                     it.status = Status::Review;
+                    engine::lock_status(it);
                     true
                 } else {
                     false
@@ -581,6 +582,7 @@ fn open_root(ui: &U, root: PathBuf) {
             for (i, it) in items.iter_mut().enumerate() {
                 it.status = Status::Review;
                 it.message = Some("Clé API TMDB manquante".into());
+                engine::lock_status(it);
                 rep(Progress::Item(i, Box::new(it.clone())));
             }
         }
@@ -979,6 +981,7 @@ fn choose_match(ui: &U, m: TmdbMatch) {
                     it.message = None;
                     engine::apply_match(&mut it, m.clone(), &api, Status::Confirmed, &cfg);
                     it.included = true;
+                    engine::lock_status(&mut it);
                     it
                 })
                 .collect::<Vec<_>>()
@@ -1042,6 +1045,7 @@ fn run_search(ui: &U) {
                     }
                     Err(e) => it.message = Some(e.clone()),
                 }
+                engine::lock_status(it);
             }
         }
         for &j in &idxs {

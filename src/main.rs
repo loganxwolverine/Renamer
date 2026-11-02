@@ -31,7 +31,14 @@ fn cli_preview(root: PathBuf, offline: bool) {
     if !offline && api.has_key() {
         engine::identify_all(&mut items, &api, &cfg, &quiet);
     }
+    for it in items.iter_mut() {
+        engine::lock_status(it);
+    }
     let idx: Vec<usize> = (0..items.len()).collect();
+    for it in items.iter().filter(|i| i.locked.is_some()) {
+        println!("[{}] {}", it.status.label(), it.path.strip_prefix(&root).unwrap_or(&it.path).display());
+        println!("   {}", it.locked.as_deref().unwrap_or(""));
+    }
     for plan in naming::build_plan(&items, &idx, &cfg) {
         let it = &items[plan.index];
         println!("[{}] {:?} {}", it.status.label(), it.kind, it.layout.label());

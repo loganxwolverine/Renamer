@@ -45,6 +45,36 @@ fn disc_layout(dir: &Path) -> Option<Layout> {
     }
 }
 
+/// Sous-dossiers qui font partie de la structure d'un disque : jamais renommés, jamais parcourus.
+const DISC_STRUCT: &[&str] = &["bdmv", "video_ts", "audio_ts", "certificate", "aacs", "bdsvm", "jar", "makemkv", "hvdvd_ts"];
+
+pub fn is_disc_struct(name: &str) -> bool {
+    DISC_STRUCT.contains(&name.to_lowercase().as_str())
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Disc {
+    /// Dossier qui ne contient que la structure d'un disque (+ éventuels .nfo, jaquettes…)
+    Clean(Layout),
+    /// Structure de disque mélangée à d'autres films / dossiers : on ne peut pas renommer le dossier
+    Mixed(Layout),
+}
+
+pub fn disc_check(dir: &Path) -> Option<Disc> {
+    let layout = disc_layout(dir)?;
+    let Ok(rd) = std::fs::read_dir(dir) else { return Some(Disc::Clean(layout)) };
+    let mixed = rd.flatten().any(|e| {
+        let p = e.path();
+        let n = e.file_name().to_string_lossy().to_string();
+        if p.is_dir() {
+            !is_disc_struct(&n) && !SKIP_DIR.is_match(&n)
+        } else {
+            is_video(&p)
+        }
+    });
+    Some(if mixed { Disc::Mixed(layout) } else { Disc::Clean(layout) })
+}
+
 /// Dossier « catégorie » : le plus profond des ancêtres nommés Films / Séries / UHD…, sinon la racine.
 pub fn category_for(path: &Path, root: &Path) -> PathBuf {
     let mut best = root.to_path_buf();
@@ -70,13 +100,29 @@ pub fn scan(root: &Path) -> Vec<MediaItem> {
         let p = entry.path();
         let name = entry.file_name().to_string_lossy().to_string();
         if entry.file_type().is_dir() {
-            if p != root && SKIP_DIR.is_match(&name) {
+            if p != root && (SKIP_DIR.is_match(&name) || is_disc_struct(&name)) {
                 walker.skip_current_dir();
                 continue;
             }
-            if let Some(layout) = disc_layout(p) {
-                items.push(make_item(p.to_path_buf(), layout, root));
-                walker.skip_current_dir();
+            match disc_check(p) {
+                Some(Disc::Clean(layout)) => {
+                    let mut it = make_item(p.to_path_buf(), layout, root);
+                    if p == root {
+                        it.locked = Some("C'est le dossier ouvert lui-même : ouvrez plutôt son dossier parent pour pouvoir le renommer.".into());
+                    } else if p == it.category_dir || CATEGORY.is_match(&name) {
+                        it.locked = Some(format!("La structure du disque est posée directement dans « {name} », qui est un dossier de rangement : il ne sera pas renommé. Placez BDMV / VIDEO_TS dans un dossier dédié au film."));
+                    }
+                    items.push(it);
+                    walker.skip_current_dir();
+                }
+                Some(Disc::Mixed(layout)) => {
+                    // Disque « orphelin » à côté d'autres médias : signalé, et on continue
+                    // à parcourir les autres sous-dossiers normalement.
+                    let mut it = make_item(p.to_path_buf(), layout, root);
+                    it.locked = Some(format!("Ce dossier contient un {} mais aussi d'autres films ou dossiers : le renommer toucherait tout son contenu. Placez la structure du disque dans un dossier dédié.", if layout == Layout::DvdFolder { "VIDEO_TS" } else { "BDMV" }));
+                    items.push(it);
+                }
+                None => {}
             }
             continue;
         }
@@ -124,6 +170,7 @@ pub fn make_item(path: PathBuf, layout: Layout, root: &Path) -> MediaItem {
         status: Status::Pending,
         included: true,
         message: None,
+        locked: None,
     }
 }
 
@@ -151,7 +198,7 @@ pub fn sidecars(video: &Path) -> Vec<PathBuf> {
 
 /// Nombre de vidéos principales dans un dossier (récursif, hors bonus ; un disque compte pour 1).
 pub fn count_videos(dir: &Path) -> usize {
-    if disc_layout(dir).is_some() {
+    if matches!(disc_check(dir), Some(Disc::Clean(_))) {
         return 1;
     }
     let Ok(rd) = std::fs::read_dir(dir) else { return 0 };
@@ -160,7 +207,7 @@ pub fn count_videos(dir: &Path) -> usize {
         let p = e.path();
         let name = e.file_name().to_string_lossy().to_lowercase();
         if p.is_dir() {
-            if !SKIP_DIR.is_match(&name) {
+            if !SKIP_DIR.is_match(&name) && !is_disc_struct(&name) {
                 n += count_videos(&p);
             }
         } else if is_video(&p) && !name.contains("sample") {
@@ -168,4 +215,43 @@ pub fn count_videos(dir: &Path) -> usize {
         }
     }
     n
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    fn touch(p: &Path) {
+        fs::create_dir_all(p.parent().unwrap()).unwrap();
+        fs::write(p, b"x").unwrap();
+    }
+
+    #[test]
+    fn disc_structures() {
+        let t = std::env::temp_dir().join(format!("ohtpc-test-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&t);
+        touch(&t.join("Films/Heat (1995)/DISC1/BDMV/STREAM/00800.m2ts"));
+        touch(&t.join("Films/Heat (1995)/DISC2/BDMV/STREAM/00001.m2ts"));
+        touch(&t.join("Films/Inception/BDMV/STREAM/00001.m2ts"));
+        fs::create_dir_all(t.join("Films/Inception/CERTIFICATE")).unwrap();
+        touch(&t.join("Films/BDMV/STREAM/00002.m2ts")); // disque égaré dans une catégorie
+        touch(&t.join("Films/Amelie/VIDEO_TS/VTS_01_1.VOB"));
+
+        let items = scan(&t);
+        let find = |rel: &str| items.iter().find(|i| i.path == t.join(rel));
+        assert_eq!(items.len(), 5, "{:#?}", items.iter().map(|i| &i.path).collect::<Vec<_>>());
+        assert!(find("Films").unwrap().locked.is_some());
+        assert!(find("Films/Heat (1995)/DISC1").unwrap().locked.is_none());
+        assert!(find("Films/Inception").unwrap().locked.is_none());
+        assert_eq!(find("Films/Amelie").unwrap().layout, Layout::DvdFolder);
+        // aucun fichier interne d'une structure disque n'est listé
+        assert!(items.iter().all(|i| !i.path.to_string_lossy().contains("STREAM")));
+
+        // ouvrir directement un dossier disque : verrouillé
+        let only = scan(&t.join("Films/Inception"));
+        assert_eq!(only.len(), 1);
+        assert!(only[0].locked.is_some());
+        let _ = fs::remove_dir_all(&t);
+    }
 }

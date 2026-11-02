@@ -34,7 +34,7 @@ impl Default for Config {
             language: "fr-FR".into(),
             last_root: None,
             movie_folder: "{titre}< ({annee})>< [{titre_original}]>< [tmdbid-{tmdbid}]>".into(),
-            movie_file: "{titre}< ({annee})>< [{titre_original}]>< [tmdbid-{tmdbid}]>< - {tech}>".into(),
+            movie_file: "{titre}< ({annee})>< [{titre_original}]>< [tmdbid-{tmdbid}]>< - {tech}>< - Disque {disque}>".into(),
             series_folder: "{serie}< ({annee})>< [{titre_original}]>< [tmdbid-{tmdbid}]>".into(),
             season_folder: "Saison {saison}".into(),
             episode_file: "{serie} - S{saison}E{episode}< - {titre_episode}>< - {tech}>".into(),
