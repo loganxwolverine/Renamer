@@ -3,6 +3,9 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  # aussi quand une release est publiée depuis l'interface ou l'API GitHub
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -12,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     container: fedora:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Dépendances
         run: dnf install -y rust cargo gtk4-devel libadwaita-devel gcc pkgconf-pkg-config tar gzip
       - name: Tests
