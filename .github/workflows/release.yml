@@ -1,11 +1,11 @@
 name: Release
 
+# Publier une release sur GitHub (avec un tag vX.Y.Z ou vX.Y.Z-rc.N) suffit :
+# ce workflow compile le binaire Fedora et l'attache à la release.
 on:
-  push:
-    tags: ["v*"]
-  # aussi quand une release est publiée depuis l'interface ou l'API GitHub
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: write
