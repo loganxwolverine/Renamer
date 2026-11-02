@@ -18,8 +18,9 @@ pub struct Config {
     pub episode_file: String,
     /// Composition de {tech}
     pub tech: String,
-    /// Créer un dossier par film
-    pub folder_per_movie: bool,
+    /// false (défaut) : on renomme sur place, l'arborescence ne bouge pas.
+    /// true : on range dans « Film (année)/ » et « Série/Saison XX/ ».
+    pub reorganize: bool,
     /// N'ajouter le titre original que s'il est en alphabet latin (évite 千と千尋の神隠し)
     pub original_title_latin_only: bool,
     /// Analyses ffprobe en parallèle (réduire sur un partage SMB lent)
@@ -33,12 +34,12 @@ impl Default for Config {
             language: "fr-FR".into(),
             last_root: None,
             movie_folder: "{titre}< ({annee})>< [{titre_original}]>< [tmdbid-{tmdbid}]>".into(),
-            movie_file: "{titre}< ({annee})>< [tmdbid-{tmdbid}]>< - {tech}>".into(),
+            movie_file: "{titre}< ({annee})>< [{titre_original}]>< [tmdbid-{tmdbid}]>< - {tech}>".into(),
             series_folder: "{serie}< ({annee})>< [{titre_original}]>< [tmdbid-{tmdbid}]>".into(),
             season_folder: "Saison {saison}".into(),
             episode_file: "{serie} - S{saison}E{episode}< - {titre_episode}>< - {tech}>".into(),
             tech: "{source} {resolution} {codec} {hdr} {audio} {langues}".into(),
-            folder_per_movie: true,
+            reorganize: false,
             original_title_latin_only: true,
             probe_threads: 4,
         }

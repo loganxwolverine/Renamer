@@ -76,7 +76,11 @@ pub fn show(ui: &Rc<Ui>) {
     page.add(&g);
 
     let g2 = adw::PreferencesGroup::builder().title("Organisation").build();
-    let per_movie = adw::SwitchRow::builder().title("Un dossier par film").subtitle("Les différentes versions (DVD, Blu-ray, UHD) d'un film sont rangées ensemble").active(cfg.folder_per_movie).build();
+    let per_movie = adw::SwitchRow::builder()
+        .title("Réorganiser l'arborescence")
+        .subtitle("Désactivé : chaque fichier est renommé à sa place, aucun dossier n'est créé ni déplacé.\nActivé : rangement en « Film (année)/ » et « Série/Saison XX/ » selon les modèles de dossiers.")
+        .active(cfg.reorganize)
+        .build();
     let latin = adw::SwitchRow::builder().title("Titre original en alphabet latin uniquement").subtitle("Évite par exemple « 千と千尋の神隠し » dans les noms").active(cfg.original_title_latin_only).build();
     let threads = adw::SpinRow::with_range(1.0, 16.0, 1.0);
     threads.set_title("Analyses en parallèle");
@@ -139,7 +143,7 @@ pub fn show(ui: &Rc<Ui>) {
             let mut c = base.clone();
             c.tmdb_key = key.text().trim().to_string();
             c.language = lang.text().trim().to_string();
-            c.folder_per_movie = per_movie.is_active();
+            c.reorganize = per_movie.is_active();
             c.original_title_latin_only = latin.is_active();
             c.probe_threads = threads.value() as usize;
             c.movie_folder = mf.text().to_string();

@@ -134,11 +134,14 @@ pub fn target_name(item: &MediaItem, cfg: &Config, vars: &HashMap<&str, String>)
 pub fn target_path(item: &MediaItem, cfg: &Config) -> PathBuf {
     let vars = vars_for(item, cfg);
     let name = target_name(item, cfg, &vars);
+    if !cfg.reorganize {
+        // renommage sur place : même dossier, seul le nom change
+        return item.path.parent().unwrap_or(&item.category_dir).join(name);
+    }
     match item.kind {
-        MediaKind::Movie if cfg.folder_per_movie => {
+        MediaKind::Movie => {
             item.category_dir.join(sanitize(&render(&cfg.movie_folder, &vars))).join(name)
         }
-        MediaKind::Movie => item.path.parent().unwrap_or(&item.category_dir).join(name),
         MediaKind::Episode => item
             .category_dir
             .join(sanitize(&render(&cfg.series_folder, &vars)))
@@ -200,7 +203,7 @@ pub fn build_plan(items: &[MediaItem], indices: &[usize], cfg: &Config) -> Vec<I
         // Film seul dans son propre dossier : on renomme le dossier plutôt que d'en créer un.
         let target_dir = wanted.parent().unwrap().to_path_buf();
         let own_folder = item.kind == MediaKind::Movie
-            && cfg.folder_per_movie
+            && cfg.reorganize
             && parent != item.category_dir
             && parent.starts_with(&item.category_dir)
             && !moved_dirs.contains(&parent)

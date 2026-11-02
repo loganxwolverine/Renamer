@@ -6,11 +6,10 @@ permettent à OpenHTPC (et à tout scraper TMDB) d'identifier chaque média sans
 ambiguïté. Ils contiennent aussi les vraies informations techniques.
 
 ```
-Films/Le Parrain (1972) [The Godfather] [tmdbid-238]/
-    Le Parrain (1972) [tmdbid-238] - UHD Bluray 2160p HEVC DV P7 HDR10 TrueHD Atmos 7.1 MULTi.mkv
-    Le Parrain (1972) [tmdbid-238] - UHD Bluray 2160p HEVC DV P7 HDR10 TrueHD Atmos 7.1 MULTi.fr.srt
-    Le Parrain (1972) [tmdbid-238] - DVD 576i MPEG2 AC3 5.1 VF/      ← dossier VIDEO_TS
-Séries/Breaking Bad (2008) [tmdbid-1396]/Saison 01/
+Films/Le Parrain/                                   ← vos dossiers restent tels quels
+    Le Parrain (1972) [The Godfather] [tmdbid-238] - UHD Bluray 2160p HEVC DV P7 HDR10 TrueHD Atmos 7.1 MULTi.mkv
+    Le Parrain (1972) [The Godfather] [tmdbid-238] - UHD Bluray 2160p HEVC DV P7 HDR10 TrueHD Atmos 7.1 MULTi.fr.srt
+Séries/Breaking Bad/Season 1/
     Breaking Bad - S01E01 - Chute libre - Bluray 1080p HEVC DTS-HD MA 5.1 MULTi.mkv
 ```
 
@@ -32,6 +31,11 @@ Au premier lancement : **Menu → Préférences → Clé API TMDB**. La clé v3
 gratuite et le jeton de lecture v4 sont tous deux acceptés.
 
 ## Fonctionnement
+
+Par défaut, **seuls les noms changent** : aucun dossier n'est créé, déplacé ou
+supprimé. Un dossier disque (`VIDEO_TS`, `BDMV`) est renommé à sa place. Le
+rangement automatique en `Film (année)/` et `Série/Saison XX/` est une option
+(Préférences → « Réorganiser l'arborescence »).
 
 1. **Ouvrir** le dossier de la médiathèque (Ctrl+O).
 2. **Scan.** L'application repère :
