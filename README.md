@@ -220,6 +220,12 @@ cargo test     # tests unitaires
 cargo build --release
 ```
 
+### Publier une nouvelle version
+
+1. Mettre à jour `version` dans `Cargo.toml` et ajouter une section dans `CHANGELOG.md`.
+2. Sur GitHub, ouvrir *Releases* → *Draft a new release*, créer le tag `vX.Y.Z` (ou `vX.Y.Z-rc.N` pour une version candidate, à cocher *pre-release*), puis cliquer sur *Publish*.
+3. Le workflow **Release** compile le binaire Fedora, puis attache l'archive et son empreinte SHA-256 à la release.
+
 Les contributions et les retours sont les bienvenus : ouvrez une *issue* en joignant la sortie de `--apercu` pour les cas mal reconnus.
 
 ## Licence et crédits
