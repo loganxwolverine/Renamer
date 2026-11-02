@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OpenHTPC Renamer
+GenericName=Renommage de médiathèque
+Comment=Renomme films, séries, DVD, Blu-ray et UHD pour une identification TMDB fiable
+Exec=openhtpc-renamer
+Icon=folder-videos
+Terminal=false
+Type=Application
+Categories=AudioVideo;Video;Utility;GTK;
+Keywords=film;série;tmdb;renommer;bluray;dvd;uhd;plex;jellyfin;
+StartupNotify=true
