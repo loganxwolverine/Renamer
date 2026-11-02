@@ -9,8 +9,8 @@ use std::rc::Rc;
 fn sample(kind: MediaKind) -> MediaItem {
     let mut it = crate::core::scan::make_item(
         PathBuf::from(match kind {
-            MediaKind::Movie => "/Media/Films/x.mkv",
-            MediaKind::Episode => "/Media/Series/x/S01E01.mkv",
+            MediaKind::Movie => "/Media/Films/Le Parrain/title_t00.mkv",
+            MediaKind::Episode => "/Media/Series/Breaking Bad/Saison 1/S01E01.mkv",
         }),
         Layout::File,
         &PathBuf::from("/Media"),
@@ -97,9 +97,10 @@ pub fn show(ui: &Rc<Ui>) {
     let help = adw::PreferencesGroup::builder()
         .title("Variables")
         .description(
-            "{titre} {titre_original} {annee} {tmdbid} · {serie} {saison} {episode} {titre_episode}\n\
+            "{titre} {titre_original} {annee} {tmdbid} {disque} · {serie} {saison} {episode} {titre_episode}\n\
              {source} {resolution} {codec} {hdr} {audio} {langues} {bits} · {tech} = composition technique\n\
-             Une partie entre &lt; &gt; disparaît si l'une de ses variables est vide : &lt; [{titre_original}]&gt;",
+             Une partie entre &lt; &gt; disparaît si l'une de ses variables est vide : &lt; [{titre_original}]&gt;\n\
+             Les modèles de dossiers ne servent que si « Réorganiser l'arborescence » est activé.",
         )
         .build();
     page2.add(&help);

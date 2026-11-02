@@ -24,3 +24,7 @@ Première version candidate, testée sur une médiathèque réelle.
   - un `BDMV` ou `VIDEO_TS` mal placé est signalé « Non renommable » ;
   - les disques sont numérotés (`- Disque 2`).
 - Mode texte sans modification : `openhtpc-renamer --apercu <dossier>`.
+
+### Interface
+- La raison d'un élément « Non renommable » est affichée en évidence, et l'élément est décoché.
+- Corrections d'affichage : bouton d'accueil, barre du bas masquée tant qu'aucune médiathèque n'est ouverte, aide des modèles complétée.

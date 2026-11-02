@@ -60,6 +60,7 @@ pub struct Ui {
     progress: gtk::ProgressBar,
     progress_rev: gtk::Revealer,
     summary: gtk::Label,
+    action_bar: gtk::ActionBar,
     rename_btn: gtk::Button,
     reanalyze_btn: gtk::Button,
     // détails
@@ -282,6 +283,7 @@ pub fn build(app: &adw::Application) {
     let action_bar = gtk::ActionBar::new();
     action_bar.pack_start(&summary);
     action_bar.pack_end(&rename_btn);
+    action_bar.set_revealed(false);
 
     let content = gtk::Box::new(gtk::Orientation::Vertical, 0);
     content.append(&progress_rev);
@@ -305,6 +307,7 @@ pub fn build(app: &adw::Application) {
         progress,
         progress_rev,
         summary,
+        action_bar: action_bar.clone(),
         rename_btn,
         reanalyze_btn,
         details_stack,
@@ -555,6 +558,7 @@ fn open_root(ui: &U, root: PathBuf) {
     }
     ui.title.set_subtitle(&root.display().to_string());
     ui.stack.set_visible_child_name("main");
+    ui.action_bar.set_revealed(true);
     ui.details_stack.set_visible_child_name("empty");
     clear_box(&ui.list);
     ui.rows.borrow_mut().clear();
@@ -624,7 +628,7 @@ fn open_root(ui: &U, root: PathBuf) {
                             if !matches!(dst.status, Status::Confirmed) || dst.matched.is_none() {
                                 let included = dst.included;
                                 *dst = *it;
-                                dst.included = included;
+                                dst.included = included && dst.locked.is_none();
                             }
                         }
                     }
@@ -666,7 +670,7 @@ fn build_rows(ui: &U) {
         let target = gtk::Label::builder().xalign(0.0).ellipsize(gtk::pango::EllipsizeMode::Middle).build();
         target.add_css_class("heading");
         let status = gtk::Label::builder().valign(gtk::Align::Center).build();
-        status.add_css_class("pill");
+        status.add_css_class("status-pill");
         let check = gtk::CheckButton::builder().valign(gtk::Align::Center).tooltip_text("Inclure dans le renommage").build();
         let texts = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(2).hexpand(true).build();
         texts.append(&target);
@@ -846,12 +850,21 @@ fn show_details(ui: &U) {
     }
 
     // cible
-    let target = if it.matched.is_some() {
+    let target = if let Some(l) = &it.locked {
+        format!("⛔ Non renommable\n{l}")
+    } else if it.matched.is_some() {
         rel(&naming::target_path(it, &st.cfg), &st.root)
     } else {
         "— choisissez une correspondance TMDB —".into()
     };
     ui.d_target.set_label(&target);
+    if it.locked.is_some() {
+        ui.d_target.add_css_class("error");
+        ui.d_target.remove_css_class("newname");
+    } else {
+        ui.d_target.remove_css_class("error");
+        ui.d_target.add_css_class("newname");
+    }
     ui.d_include.set_active(it.included);
     ui.d_include.set_sensitive(it.status.ready());
 

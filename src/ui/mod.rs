@@ -5,12 +5,12 @@ use adw::prelude::*;
 use gtk::{gdk, gio, glib};
 
 const CSS: &str = r#"
-.pill { border-radius: 999px; padding: 1px 10px; font-size: 0.8em; font-weight: 700; }
-.pill.success { background: alpha(@success_color, 0.16); }
-.pill.warning { background: alpha(@warning_color, 0.18); }
-.pill.error   { background: alpha(@error_color, 0.16); }
-.pill.accent  { background: alpha(@accent_color, 0.16); }
-.pill.dim-label { background: alpha(@window_fg_color, 0.08); }
+.status-pill { border-radius: 999px; padding: 1px 10px; font-size: 0.8em; font-weight: 700; }
+.status-pill.success { background: alpha(@success_color, 0.16); }
+.status-pill.warning { background: alpha(@warning_color, 0.18); }
+.status-pill.error   { background: alpha(@error_color, 0.16); }
+.status-pill.accent  { background: alpha(@accent_color, 0.16); }
+.status-pill.dim-label { background: alpha(@window_fg_color, 0.08); }
 .chip { border-radius: 6px; padding: 2px 8px; font-size: 0.85em; font-weight: 600;
         background: alpha(@accent_bg_color, 0.14); color: @accent_color; }
 .chip.hdr { background: alpha(#e5a50a, 0.18); color: #c88800; }
