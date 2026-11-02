@@ -8,6 +8,10 @@ const APP_ID: &str = "io.github.openhtpc.Renamer";
 
 fn main() -> gtk::glib::ExitCode {
     let args: Vec<String> = std::env::args().collect();
+    if args.iter().any(|a| a == "--version" || a == "-V") {
+        println!("openhtpc-renamer {}", env!("CARGO_PKG_VERSION"));
+        return gtk::glib::ExitCode::SUCCESS;
+    }
     // Mode texte : aperçu sans rien renommer
     //   openhtpc-renamer --apercu /chemin/Media [--sans-tmdb]
     if args.get(1).map(|a| a == "--apercu" || a == "--dry-run").unwrap_or(false) {

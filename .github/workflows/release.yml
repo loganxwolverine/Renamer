@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dépendances
+        run: dnf install -y rust cargo gtk4-devel libadwaita-devel gcc pkgconf-pkg-config tar gzip
+      - name: Tests
+        run: cargo test --locked
+      - name: Compilation
+        run: cargo build --release --locked
+      - name: Paquet binaire
+        run: |
+          NAME=openhtpc-renamer-${GITHUB_REF_NAME}-linux-x86_64
+          mkdir -p "$NAME/data"
+          cp target/release/openhtpc-renamer install.sh README.md CHANGELOG.md LICENSE "$NAME/"
+          cp data/*.desktop "$NAME/data/"
+          tar czf "$NAME.tar.gz" "$NAME"
+          sha256sum "$NAME.tar.gz" > "$NAME.tar.gz.sha256"
+      - name: Notes de version
+        run: |
+          VER=${GITHUB_REF_NAME#v}
+          awk -v v="$VER" '$0 ~ "^## \\[" v "\\]" {p=1; next} /^## \[/ {p=0} p' CHANGELOG.md > notes.md
+      - name: Publication
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: notes.md
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            openhtpc-renamer-*.tar.gz
+            openhtpc-renamer-*.tar.gz.sha256

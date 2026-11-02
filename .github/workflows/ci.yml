@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Compilation dans Fedora : mêmes versions de GTK4 / libadwaita que la cible
+    container: fedora:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dépendances
+        run: dnf install -y rust cargo clippy gtk4-devel libadwaita-devel gcc pkgconf-pkg-config
+      - name: Tests
+        run: cargo test --locked
+      - name: Compilation release
+        run: cargo build --release --locked

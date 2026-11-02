@@ -13,11 +13,21 @@ Séries/Breaking Bad/Season 1/
     Breaking Bad - S01E01 - Chute libre - Bluray 1080p HEVC DTS-HD MA 5.1 MULTi.mkv
 ```
 
+![Détail d'un média](docs/apercu-detail.png)
+
 ## Installation (Fedora)
+
+**Depuis une release** : téléchargez `openhtpc-renamer-…-linux-x86_64.tar.gz` dans
+l'onglet *Releases*, décompressez-le puis lancez :
 
 ```bash
 ./install.sh
 ```
+
+Le binaire est compilé sur la dernière Fedora ; pour une version plus ancienne,
+installez depuis les sources.
+
+**Depuis les sources** : lancez le même `./install.sh` à la racine du dépôt.
 
 Ou à la main :
 
@@ -126,3 +136,10 @@ cargo test
   - `rename.rs` : exécution, journal, annulation
   - `scan.rs`, `engine.rs` : scan et chaîne d'analyse
 - `src/ui/` : interface GTK4 / libadwaita.
+
+## Licence et crédits
+
+Le code est sous licence MIT.
+
+Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.
+Les métadonnées et les affiches proviennent de [The Movie Database](https://www.themoviedb.org).

@@ -1,6 +1,6 @@
 [package]
 name = "openhtpc-renamer"
-version = "0.1.0"
+version = "0.1.0-rc.1"
 edition = "2021"
 description = "Renommage de médiathèque (films, séries, DVD, Blu-ray, UHD) avec identification TMDB pour OpenHTPC"
 license = "MIT"
